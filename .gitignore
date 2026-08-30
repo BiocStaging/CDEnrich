@@ -24,3 +24,7 @@ Thumbs.db
 .quarto/
 .Rproj.user
 .quarto
+
+# Generated vignette result files
+vignettes/*.csv
+vignettes/*.png
