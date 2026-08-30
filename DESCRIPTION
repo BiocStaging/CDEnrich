@@ -1,0 +1,32 @@
+Package: CDEnrich
+Title: Cell Death Pathway Enrichment Analysis
+Version: 0.1.0
+Authors@R: 
+    person("Yushan", "Chen", , "chen_yushan0625@163.com", role = c("aut", "cre"))
+Description: This package provides functions for ORA and GSEA enrichment analysis of cell death pathways, including visualization for bubble plots and GSEA curves.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Imports:
+    clusterProfiler,
+    enrichplot,
+    ggplot2,
+    stats,
+    utils,
+    ggrepel,
+    stringr,
+    tidyr,
+    GSVA,
+    pheatmap,
+    rlang
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+     withr
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Depends: 
+    R (>= 3.5)
+LazyData: true
+Config/roxygen2/version: 8.1.0

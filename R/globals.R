@@ -1,0 +1,18 @@
+utils::globalVariables(c(
+  ".data",
+  "Cluster",
+  "Count",
+  "Description",
+  "GeneRatio",
+  "Group",
+  "ID",
+  "Mean",
+  "Pathway",
+  "SEM",
+  "Score",
+  "Value",
+  "cd_Genesets",
+  "logp",
+  "representative_genes",
+  "representative_pathways"
+))
