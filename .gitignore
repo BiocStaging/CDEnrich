@@ -1,7 +1,26 @@
-.Rproj.user
-inst/doc
+# RStudio project files
+.Rproj.user/
+.Ruserdata
+
+# R session files
 .Rhistory
 .RData
+
+# Local credentials and authentication files
+.Renviron
 .httr-oauth
+
+# R package documentation/build output
+inst/doc/
+*.tar.gz
+*.Rcheck/
+_check/
+
+# Operating system files
 .DS_Store
+Thumbs.db
+
+# Quarto temporary files
+.quarto/
+.Rproj.user
 .quarto
