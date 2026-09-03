@@ -8,8 +8,8 @@
 #' 2. Targeted mode: single-pathway heatmap without row scaling
 #'
 #' @param ssgsea_result A \code{celldeath_ssgsea} object returned by \code{celldeath_ssgsea()}.
-#' @param show_category Number of top pathways to display (ordered by mean
-#' absolute score). Default: 30.   # heatmap；bar 里 Default: 20
+#' @param show_category Number of top pathways to display, ordered by
+#' mean absolute score. The default is 30.
 #' @param scale_rows Logical. Whether to z-score scale each pathway across samples
 #' (recommended for multi-pathway mode). Default: TRUE.
 #' @param cluster_cols Logical. Whether to cluster samples. Default: TRUE.
@@ -230,8 +230,8 @@ plot_death_ssgsea_boxplot <- function(ssgsea_result,
 #'
 #' @param ssgsea_res A \code{celldeath_ssgsea} object returned by \code{celldeath_ssgsea()}
 #' (must have non-NULL \code{group}).
-#' @param show_category Number of top pathways to display (ordered by mean
-#' absolute score). Default: 30.   # heatmap；bar 里 Default: 20
+#' @param show_category Number of top pathways to display, ordered by
+#' mean absolute score. The default is 20.
 #' @param palette Group colors. Default: c("#2E8B57", "#F39C12", "#E74C3C", "#8E44AD").
 #' @param title Plot title. Default: "Mean Cell Death Pathway ssGSEA Score".
 #' @param filename If provided, save plot to file (e.g., "barplot.png"). Default: NULL.

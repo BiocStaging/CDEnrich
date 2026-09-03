@@ -69,7 +69,7 @@ if (!requireNamespace("remotes", quietly = TRUE)) {
 }
 
 # Install CDEnrich (replace "YourUserName" with your GitHub account)
-remotes::install_github("YourUserName/CDEnrich", build_vignettes = TRUE)
+remotes::install_github("Yushan-Chen-829/CDEnrich", build_vignettes = TRUE)
 ```
 
 Load the package and verify the installation:

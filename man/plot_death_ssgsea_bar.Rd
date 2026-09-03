@@ -17,8 +17,8 @@ plot_death_ssgsea_bar(
 \item{ssgsea_res}{A \code{celldeath_ssgsea} object returned by \code{celldeath_ssgsea()}
 (must have non-NULL \code{group}).}
 
-\item{show_category}{Number of top pathways to display (ordered by mean
-absolute score). Default: 30.   # heatmap；bar 里 Default: 20}
+\item{show_category}{Number of top pathways to display, ordered by
+mean absolute score. The default is 20.}
 
 \item{palette}{Group colors. Default: c("#2E8B57", "#F39C12", "#E74C3C", "#8E44AD").}
 

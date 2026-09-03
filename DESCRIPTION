@@ -1,9 +1,23 @@
 Package: CDEnrich
-Title: Cell Death Pathway Enrichment Analysis
+Title: Enrichment Analysis for Cell Death Pathways
 Version: 0.1.0
-Authors@R: 
-    person("Yushan", "Chen", , "chen_yushan0625@163.com", role = c("aut", "cre"))
-Description: This package provides functions for ORA and GSEA enrichment analysis of cell death pathways, including visualization for bubble plots and GSEA curves.
+Authors@R:
+    person(
+        given = "Yushan",
+        family = "Chen",
+        email = "chen_yushan0625@163.com",
+        role = c("aut", "cre")
+    )
+Description: Provides a curated collection of gene sets for major
+    cell death modalities, including apoptosis, ferroptosis,
+    pyroptosis, and disulfidptosis, with literature-supported
+    representative gene sets recommended for 13 cell death types.
+    Implements a unified workflow for over-representation analysis,
+    gene set enrichment analysis (GSEA), and single-sample gene set
+    enrichment analysis (ssGSEA), supporting both single-group and
+    multi-group comparisons, differential analysis of pathway
+    scores, and visualization. The package name 'CDEnrich' stands
+    for Cell Death Enrichment Analysis.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -23,10 +37,10 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-     withr
+    withr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-Depends: 
+Depends:
     R (>= 3.5)
 LazyData: true
 Config/roxygen2/version: 8.1.0

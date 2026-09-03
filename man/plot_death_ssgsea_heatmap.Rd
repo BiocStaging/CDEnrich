@@ -20,8 +20,8 @@ plot_death_ssgsea_heatmap(
 \arguments{
 \item{ssgsea_result}{A \code{celldeath_ssgsea} object returned by \code{celldeath_ssgsea()}.}
 
-\item{show_category}{Number of top pathways to display (ordered by mean
-absolute score). Default: 30.   # heatmap；bar 里 Default: 20}
+\item{show_category}{Number of top pathways to display, ordered by
+mean absolute score. The default is 30.}
 
 \item{scale_rows}{Logical. Whether to z-score scale each pathway across samples
 (recommended for multi-pathway mode). Default: TRUE.}
