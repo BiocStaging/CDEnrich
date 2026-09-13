@@ -1,0 +1,643 @@
+---
+title: "CDEnrich: Complete Usage Guide for Cell Death Enrichment"
+author:
+  - name: Yushan Chen
+    email: chen_yushan0625@163.com
+output:
+  BiocStyle::html_document
+vignette: >
+  %\VignetteIndexEntry{CDEnrich: Complete Usage Guide for Cell Death Enrichment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width = 10,
+  fig.height = 5,
+  dpi = 300
+)
+
+library(CDEnrich)
+```
+
+# Introduction
+
+CDEnrich is an R package for enrichment analysis of curated cell death
+pathways. It provides gene sets for multiple forms of regulated cell
+death, including apoptosis, ferroptosis, pyroptosis, necroptosis,
+cuproptosis, and disulfidptosis.
+
+The package supports over-representation analysis (ORA), gene set
+enrichment analysis (GSEA), single-sample GSEA (ssGSEA), multi-group
+comparison, and visualization of enrichment results.
+
+This vignette demonstrates a complete workflow using built-in
+demonstration data.
+
+**Key Features**
+
+-   Exclusive standardized gene sets for programmed cell death pathways
+-   Supports single-group and multi-group ORA enrichment analysis
+-   Supports single-group and multi-group GSEA enrichment analysis
+-   Supports ssGSEA-based sample-level scoring and multi-group
+    differential analysis - Scenario-matched visualization functions for
+    all analysis modes
+-   All plots are fully customizable and ready forpublication
+
+# Installation
+
+`CDEnrich` and its dependencies should be installed before running this
+vignette. The current development version can be installed from GitHub:
+
+```{r install-github, eval=FALSE}
+remotes::install_github("Yushan-Chen-829/CDEnrich")
+```
+
+After acceptance into Bioconductor, the package will be available
+through `BiocManager`:
+
+```{r install-bioconductor, eval=FALSE}
+BiocManager::install("CDEnrich")
+```
+
+Load the package as follows:
+
+```{r load-pkg}
+library(CDEnrich)
+packageVersion("CDEnrich")
+```
+
+# Cell Death Gene Sets
+
+CDEnrich provides curated gene sets representing 27 cell death types.
+The gene sets were compiled from published literature, PMID-supported
+annotations, and GeneCards.
+
+The 27 cell death types are organized into two source categories:
+
+-   **PMID-supported literature and GeneCards (13 types)**:
+    Disulfidptosis, Ferroptosis, Cuproptosis, Apoptosis, Pyroptosis,
+    Autophagy, Necroptosis, NETosis, Immunogenic Cell Death, Anoikis,
+    Phagocytosis, Efferocytosis, and PANoptosis.
+
+-   **GeneCards (14 types)**: Parthanatos, Entotic cell death,
+    Lysosome-dependent cell death, Alkaliptosis, Oxeiptosis, Paraptosis,
+    Methuosis, Intrinsic apoptosis, Extrinsic apoptosis, Mitochondrial
+    permeability transition (MPT)-driven necrosis, Autosis (autophagic
+    cell death), Mitotic death, Accidental cell death, and
+    paraptosis-like death.
+
+GeneCards-based gene sets should be interpreted as exploratory
+resources, particularly when no PMID is available in the package
+metadata.
+
+## Available Gene Sets
+
+The curated gene sets can be loaded with:
+
+```{r load-gene-sets}
+gene_sets <- load_cell_death_genes()
+
+length(gene_sets)
+head(names(gene_sets))
+```
+
+The returned object is a named list in which each element is a character
+vector of gene symbols. The number of gene sets may differ from 27
+because one cell death type can contain multiple gene sets.
+
+The size of each gene set can be inspected with:
+
+```{r gene-set-summary}
+gene_set_summary <- data.frame(
+  gene_set = names(gene_sets),
+  n_genes = lengths(gene_sets),
+  row.names = NULL
+)
+
+head(gene_set_summary)
+```
+
+Gene set names may include the cell death type, source, and PMID. For
+example:
+
+``` r
+"Ferroptosis_FerrDb V2(36305834)"
+```
+
+## Representative Gene Sets
+
+For selected cell death types, `CDEnrich` provides a recommended
+representative gene set:
+
+```{r representative-pathway}
+get_representative_pathway("Ferroptosis")
+get_representative_pathway("Disulfidptosis")
+```
+
+The returned information may include the cell death type, pathway name,
+PMID, source, and description. If no representative pathway is
+available, the function returns `NULL`.
+
+```{r representative-pathway-null}
+get_representative_pathway("Mitosis")
+```
+
+## Pathway Selection
+
+All enrichment functions share the same `term_select` logic:
+
+### Global analysis
+
+Omit `term_select` to use all curated gene sets:
+
+```{r global-selection}
+data("demo_deg", package = "CDEnrich")
+data("demo_all_genes", package = "CDEnrich")
+
+ora_global <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes
+)
+```
+
+### Recommended representative pathway
+
+Provide a cell death type to use its recommended gene set:
+
+```{r recommended-selection}
+ora_ferroptosis <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes,
+  term_select = "Ferroptosis"
+)
+```
+
+### All gene sets within a cell death type
+
+Set `use_recommended = FALSE` to use all gene sets associated with a
+cell death type:
+
+```{r all-selection}
+ora_ferroptosis_all <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes,
+  term_select = "Ferroptosis",
+  use_recommended = FALSE
+)
+```
+
+### Exact gene set name
+
+An exact gene set name can be supplied. The name must match the output
+of `load_cell_death_genes()` exactly:
+
+```{r exact-selection}
+ora_exact <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes,
+  term_select = "Ferroptosis_FerrDb V2(36305834)"
+)
+```
+
+The same pathway-selection rules apply to GSEA, ssGSEA, and multi-group
+analysis.
+
+# Workflow Overview
+
+`CDEnrich` provides three main enrichment workflows:
+
+-   **Over-Representation Analysis (ORA):** Identifies cell death
+    pathways over-represented in a gene list.
+-   **Gene Set Enrichment Analysis (GSEA):** Evaluates cell death
+    pathways across a ranked gene list.
+-   **Single-Sample GSEA (ssGSEA):** Calculates a cell death pathway
+    score for each sample and supports group-level comparisons.
+
+The package also supports multi-group ORA and GSEA, differential
+analysis of ssGSEA scores, and visualization of enrichment results.
+
+The general workflow is:
+
+``` text
+Input data
+  -> Select cell death gene sets
+  -> Run ORA, GSEA, or ssGSEA
+  -> Compare groups when appropriate
+  -> Visualize and interpret the results
+```
+
+The main analysis functions are:
+
+| Analysis            | Function                     |
+|---------------------|------------------------------|
+| Single-group ORA    | `celldeath_enrich()`         |
+| Multi-group ORA     | `celldeath_compare_enrich()` |
+| Single-group GSEA   | `celldeath_gsea()`           |
+| Multi-group GSEA    | `celldeath_gsea_multiple()`  |
+| ssGSEA              | `celldeath_ssgsea()`         |
+| Differential ssGSEA | `celldeath_ssgsea_diff()`    |
+
+# Input Data Specification
+
+The main input formats required by each analysis function are summarized
+below.
+
+## Single-group ORA
+
+`celldeath_enrich()` accepts a character vector of gene symbols.
+
+**Input requirements:**
+
+-   `deg`: A character vector of gene symbols.
+-   At least three genes are required.
+-   `universe`: An optional character vector of background genes.
+
+```{r ora-input}
+ora_genes <- c("GPX4", "ACSL4", "SLC7A11")
+```
+
+## Single-group GSEA
+
+`celldeath_gsea()` requires a named numeric vector sorted in decreasing
+order.
+
+**Input requirements:**
+
+-   Names: Gene symbols.
+-   Values: A ranking statistic, such as log2 fold change or a test
+    statistic.
+-   Order: Values must be sorted in decreasing order.
+
+```{r gsea-input}
+gene_rank <- c(
+  GPX4 = 2.8,
+  ACSL4 = 2.4,
+  SLC7A11 = 2.1
+)
+
+gene_rank <- sort(gene_rank, decreasing = TRUE)
+```
+
+## Multi-group ORA
+
+`celldeath_compare_enrich()` accepts a named list of gene vectors.
+
+**Input requirements:**
+
+-   Each list element must be a character vector of gene symbols.
+-   The list must be named.
+-   List names represent the group labels.
+-   Each gene vector must contain at least three genes.
+
+```{r multi-ora-input}
+gene_groups <- list(
+  Control = c("GPX4", "ACSL4", "FTH1"),
+  Treatment = c("GPX4", "SLC7A11", "GSDMD")
+)
+```
+
+## Multi-group GSEA
+
+`celldeath_gsea_multiple()` accepts a named list of ranked gene vectors.
+
+**Input requirements:**
+
+-   Each list element must be a named numeric vector.
+-   Each vector must be sorted in decreasing order.
+-   The list must be named.
+-   List names represent the group labels.
+
+```{r multi-gsea-input}
+ranked_groups <- list(
+  Control = c(GPX4 = 2.1, ACSL4 = 1.5, SLC7A11 = 0.8),
+  Treatment = c(GPX4 = 2.8, ACSL4 = 2.4, SLC7A11 = 1.9)
+)
+```
+
+## ssGSEA
+
+`celldeath_ssgsea()` accepts a numeric matrix or data frame with genes
+in rows and samples in columns.
+
+**Input requirements:**
+
+-   Rows represent genes; columns represent samples.
+-   Row names must contain gene symbols.
+-   Column names must contain sample names.
+-   Missing values are not allowed.
+-   Duplicated gene symbols are not allowed.
+-   The optional `group` vector must contain one label for each sample.
+
+```{r ssgsea-input}
+expr <- matrix(
+  rnorm(30),
+  nrow = 3,
+  ncol = 10,
+  dimnames = list(
+    c("GPX4", "ACSL4", "SLC7A11"),
+    paste0("Sample", 1:10)
+  )
+)
+
+group <- rep(c("Control", "Treatment"), each = 5)
+```
+
+# Minimal Working Examples
+
+## Single-group ORA
+
+The following example performs global ORA using all curated gene sets:
+
+```{r single-group-ora}
+data("demo_deg", package = "CDEnrich")
+data("demo_all_genes", package = "CDEnrich")
+
+ora_global <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes
+)
+
+ora_global
+```
+
+A bubble plot can be used to visualize the enriched pathways:
+
+```{r single-group-ora-plot}
+plot_death_enrich_bubble(
+  ora_global,
+  show_category = 10
+)
+```
+
+A targeted analysis can be performed by specifying a cell death type.
+The recommended representative gene set is selected automatically:
+
+```{r targeted-ora}
+ora_ferroptosis <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes,
+  term_select = "Ferroptosis"
+)
+
+ora_ferroptosis
+```
+
+The `universe` argument should represent the genes that were available
+for detection or testing in the original experiment.
+
+The targeted enrichment result can be visualized with
+`plot_death_enrich_targeted()`:
+
+```{r targeted-ora-plot}
+plot_death_enrich_targeted(
+  ora_ferroptosis
+)
+```
+
+This plot provides a compact visualization for a targeted analysis
+containing a single representative pathway.
+
+## Single-group GSEA
+
+The following example performs GSEA using a built-in ranked gene list:
+
+```{r single-group-gsea}
+data("demo_rank_apop", package = "CDEnrich")
+
+apoptosis_id <- get_representative_pathway("Apoptosis")$Pathway
+
+gsea_global <- celldeath_gsea(
+  geneList = demo_rank_apop,
+  pvalueCutoff = 0.05
+)
+
+gsea_global
+```
+
+The enrichment profile of the representative apoptosis pathway can be
+visualized with:
+
+```{r single-group-gsea-plot}
+plot_death_gsea_curve(
+  gsea_global,
+  pathway = apoptosis_id
+)
+```
+
+A targeted GSEA can be performed using the representative apoptosis gene
+set:
+
+```{r targeted-gsea}
+gsea_apoptosis <- celldeath_gsea(
+  geneList = demo_rank_apop,
+  term_select = apoptosis_id,
+  pvalueCutoff = 0.05
+)
+
+gsea_apoptosis
+```
+
+The demonstration ranking list contains a strong apoptosis signal.
+Depending on the installed version of `fgsea`, very small p-values may
+be reported.
+
+## Multi-group ORA
+
+Multi-group ORA requires a named list of gene vectors:
+
+```{r multi-group-ora}
+data("demo_deg_list", package = "CDEnrich")
+data("demo_all_genes", package = "CDEnrich")
+
+compare_ora <- celldeath_compare_enrich(
+  deg_list_list = demo_deg_list,
+  universe = demo_all_genes,
+  pvalueCutoff = 0.05,
+  qvalueCutoff = 0.2,
+  minGSSize = 3
+)
+
+compare_ora
+```
+
+The results can be visualized with a comparative heatmap:
+
+```{r multi-group-ora-plot}
+plot_death_compare_heatmap(
+  compare_ora,
+  show_category = 10
+)
+```
+
+A targeted comparison can be performed by specifying a cell death type:
+
+```{r targeted-multi-group-ora}
+compare_ora_ferroptosis <- celldeath_compare_enrich(
+  deg_list_list = demo_deg_list,
+  universe = demo_all_genes,
+  term_select = "Ferroptosis",
+  pvalueCutoff = 0.05,
+  qvalueCutoff = 0.2,
+  minGSSize = 3
+)
+
+compare_ora_ferroptosis
+```
+
+## Multi-group GSEA
+
+Multi-group GSEA requires a named list of ranked gene vectors:
+
+```{r multi-group-gsea}
+data("demo_rank_apop_list", package = "CDEnrich")
+
+multi_gsea <- celldeath_gsea_multiple(
+  geneList_list = demo_rank_apop_list,
+  pvalueCutoff = 1
+)
+
+multi_gsea
+```
+
+A GSEA curve can be generated for the representative apoptosis pathway:
+
+```{r multi-group-gsea-plot}
+curves <- plot_death_gsea_curve_multiple(
+  multi_gsea,
+  pathway = apoptosis_id
+)
+
+curves$Control
+curves$Treatment
+```
+
+The `pvalueCutoff = 1` setting retains results for all groups, including
+groups without a strong enrichment signal, which facilitates comparison
+across groups.
+
+## ssGSEA and Differential Analysis
+
+ssGSEA calculates a pathway score for each sample:
+
+```{r ssgsea}
+data("demo_expr", package = "CDEnrich")
+data("demo_group", package = "CDEnrich")
+
+ssgsea_result <- celldeath_ssgsea(
+  expr = demo_expr,
+  group = demo_group
+)
+
+ssgsea_result
+```
+
+A heatmap can be used to visualize pathway scores across samples:
+
+```{r ssgsea-heatmap}
+plot_death_ssgsea_heatmap(
+  ssgsea_result
+)
+```
+
+Differential analysis can be performed when group labels are available:
+
+```{r ssgsea-differential}
+ssgsea_difference <- celldeath_ssgsea_diff(
+  ssgsea_result
+)
+
+head(ssgsea_difference)
+```
+
+For two groups, the function uses a Wilcoxon test. For three or more
+groups, it uses a Kruskal-Wallis test.
+
+Group-level scores can also be displayed with a boxplot:
+
+```{r ssgsea-boxplot}
+plot_death_ssgsea_boxplot(
+  ssgsea_result
+)
+```
+
+## Exporting Results
+
+Results can be exported using the `savefile`, `filename`, or
+`filename_prefix` arguments. The following examples are shown but not
+executed during vignette construction:
+
+```{r export-ora, eval=FALSE}
+celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes,
+  savefile = TRUE,
+  filename = "single_group_ORA_result.csv"
+)
+```
+
+```{r export-gsea, eval=FALSE}
+celldeath_gsea(
+  geneList = demo_rank_apop,
+  savefile = TRUE,
+  filename = "single_group_GSEA_result.csv"
+)
+```
+
+```{r export-multi-group-ora, eval=FALSE}
+celldeath_compare_enrich(
+  deg_list_list = demo_deg_list,
+  universe = demo_all_genes,
+  savefile = TRUE,
+  filename = "multi_group_ORA_result.csv"
+)
+```
+
+```{r export-multi-group-gsea, eval=FALSE}
+celldeath_gsea_multiple(
+  geneList_list = demo_rank_apop_list,
+  savefile = TRUE
+)
+```
+
+```{r export-ssgsea, eval=FALSE}
+celldeath_ssgsea(
+  expr = demo_expr,
+  group = demo_group,
+  savefile = TRUE,
+  filename = "ssGSEA_score_matrix.csv"
+)
+
+celldeath_ssgsea_diff(
+  ssgsea_result,
+  savefile = TRUE,
+  filename = "ssGSEA_differential_results.csv"
+)
+```
+
+# Data Sources and Limitations
+
+The curated gene sets were compiled from published literature and public
+annotations. PMID-supported gene sets are linked to their corresponding
+publications when PMID information is available. Some gene sets are
+based primarily on GeneCards annotations and should be interpreted as
+exploratory resources.
+
+Enrichment results depend on the input genes, ranking statistic,
+background gene set, pathway definition, and statistical thresholds.
+They should be interpreted together with the experimental design and the
+original publications. Enrichment does not by itself establish a causal
+relationship or absolute pathway activity.
+
+# Session Information
+
+```{r session-info}
+sessionInfo()
+```

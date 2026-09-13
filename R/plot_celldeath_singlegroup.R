@@ -17,6 +17,20 @@
 #' @importFrom ggplot2 ggplot aes geom_point scale_color_gradientn scale_size_continuous
 #' @importFrom ggplot2 labs theme_minimal theme element_text ggsave
 #' @importFrom stringr str_wrap
+#' @examples
+#' data("demo_deg", package = "CDEnrich")
+#' data("demo_all_genes", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' ora_result <- celldeath_enrich(
+#'   deg = demo_deg,
+#'   universe = demo_all_genes
+#' )
+#'
+#' plot_death_enrich_bubble(
+#'   ora_result,
+#'   show_category = 10
+#' )
 plot_death_enrich_bubble <- function(enrich_res, show_category = 10,
                                      palette = c("#2E8B57", "#F39C12", "#E74C3C"),
                                      size_range = c(2, 8),
@@ -52,7 +66,7 @@ plot_death_enrich_bubble <- function(enrich_res, show_category = 10,
   }
 
   df <- df_all
-  df <- df[order(df$p.adjust), ][1:min(show_category, nrow(df)), ]
+  df <- df[order(df$p.adjust), ][seq_len(min(show_category, nrow(df))), ]
   df$Description <- stringr::str_wrap(df$Description, width = 40)
 
   # ========== Draw bubble plot ==========
@@ -100,6 +114,18 @@ plot_death_enrich_bubble <- function(enrich_res, show_category = 10,
 #' @export
 #' @importFrom stringr str_wrap
 #' @importFrom rlang .data
+#' @examples
+#' data("demo_targeted_deg", package = "CDEnrich")
+#' data("demo_all_genes", package = "CDEnrich")
+#' data("representative_pathways", package = "CDEnrich")
+#'
+#' ora_ferroptosis <- celldeath_enrich(
+#'   deg = demo_targeted_deg,
+#'   universe = demo_all_genes,
+#'   term_select = "Ferroptosis"
+#' )
+#'
+#' plot_death_enrich_targeted(ora_ferroptosis)
 plot_death_enrich_targeted <- function(enrich_res,
                                        color = "#F39C12",
                                        title = "Targeted Cell Death Pathway Enrichment",
@@ -155,11 +181,15 @@ plot_death_enrich_targeted <- function(enrich_res,
     ggplot2::geom_col(fill = color, width = 0.45) +
     ggplot2::geom_text(
       ggplot2::aes(label = .data$Label),
-      hjust = -0.05,
+      hjust = 0,
+      nudge_x = max(1, max(df$Count) * 0.03),
       size = 4
     ) +
     ggplot2::scale_x_continuous(
-      expand = ggplot2::expansion(mult = c(0, 0.55))
+      expand = ggplot2::expansion(mult = c(0, 0.65))
+    ) +
+    ggplot2::coord_cartesian(
+      clip = "off"
     ) +
     ggplot2::labs(
       x = "Overlapping Gene Count",
@@ -177,8 +207,8 @@ plot_death_enrich_targeted <- function(enrich_res,
     ggplot2::ggsave(
       filename = filename,
       plot = p,
-      width = 9,
-      height = 3,
+      width = 11,
+      height = 4,
       dpi = 300
     )
   }
@@ -210,6 +240,20 @@ plot_death_enrich_targeted <- function(enrich_res,
 #' @importFrom stringr str_wrap
 #' @importFrom ggplot2 ggsave ggplot aes geom_point scale_color_gradientn
 #' @importFrom ggplot2 scale_size_continuous labs theme_minimal element_text
+#' @examples
+#' data("demo_deg", package = "CDEnrich")
+#' data("demo_all_genes", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' ora_result <- celldeath_enrich(
+#'   deg = demo_deg,
+#'   universe = demo_all_genes
+#' )
+#'
+#' plot_death_enrich_network(
+#'   ora_result,
+#'   show_category = 10
+#' )
 plot_death_enrich_network <- function(enrich_res, show_category = 30,
                                       color = "p.adjust", filename = NULL, ...) {
   # ========== Input validity check ==========
@@ -237,7 +281,7 @@ plot_death_enrich_network <- function(enrich_res, show_category = 30,
   }
 
   # Subset top significant pathways
-  df <- df[order(df$p.adjust), ][1:min(show_category, nrow(df)), ]
+  df <- df[order(df$p.adjust), ][seq_len(min(show_category, nrow(df))), ]
 
   # Validate color argument
   if (!color %in% colnames(df)) {
@@ -288,6 +332,20 @@ plot_death_enrich_network <- function(enrich_res, show_category = 30,
 #' @importFrom ggplot2 ggplot aes geom_point scale_color_manual labs theme_bw element_text
 #' @importFrom ggrepel geom_text_repel
 #' @importFrom ggplot2 ggsave
+#' @examples
+#' data("demo_deg", package = "CDEnrich")
+#' data("demo_all_genes", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' ora_result <- celldeath_enrich(
+#'   deg = demo_deg,
+#'   universe = demo_all_genes
+#' )
+#'
+#' plot_death_volcano(
+#'   ora_result,
+#'   label_top = 5
+#' )
 plot_death_volcano <- function(enrich_res, label_top = 5,
                                color_point = "lightblue",
                                color_signif = "darkred",
@@ -337,7 +395,7 @@ plot_death_volcano <- function(enrich_res, label_top = 5,
 
   # Check effect column exists
   if (!effect_col %in% colnames(df)) {
-    stop(paste("Cannot find effect size column:", effect_col))
+    stop("Cannot find effect size column:", effect_col)
   }
 
   # Set x-axis label
@@ -378,7 +436,7 @@ plot_death_volcano <- function(enrich_res, label_top = 5,
   df$signif <- df$p.adjust < 0.05
 
   # 5. Prepare label data (top label_top entries sorted by p.adjust)
-  label_df <- df[order(df$p.adjust), ][1:min(label_top, nrow(df)), ]
+  label_df <- df[order(df$p.adjust), ][seq_len(min(label_top, nrow(df))), ]
 
   # Friendly message for single targeted GSEA pathway mode
   if (nrow(df) == 1) {
@@ -453,6 +511,20 @@ plot_death_volcano <- function(enrich_res, label_top = 5,
 #' @export
 #' @importFrom enrichplot gseaplot2
 #' @importFrom ggplot2 theme element_text
+#' @examples
+#' data("demo_rank_apop", package = "CDEnrich")
+#' data("representative_pathways", package = "CDEnrich")
+#'
+#' apoptosis_id <- get_representative_pathway("Apoptosis")$Pathway
+#'
+#' gsea_result <- celldeath_gsea(
+#'   geneList = demo_rank_apop
+#' )
+#'
+#' plot_death_gsea_curve(
+#'   gsea_result,
+#'   pathway = apoptosis_id
+#' )
 plot_death_gsea_curve <- function(gsea_res, pathway, use_recommended = TRUE) {
   # Convert to data frame for validation
   if (is.data.frame(gsea_res)) {
@@ -513,6 +585,21 @@ plot_death_gsea_curve <- function(gsea_res, pathway, use_recommended = TRUE) {
 #' @export
 #' @importFrom enrichplot gseaplot
 #' @importFrom ggplot2 ggsave
+#' @examples
+#' data("demo_rank_apop", package = "CDEnrich")
+#' data("representative_pathways", package = "CDEnrich")
+#'
+#' apoptosis_id <- get_representative_pathway("Apoptosis")$Pathway
+#'
+#' gsea_result <- celldeath_gsea(
+#'   geneList = demo_rank_apop
+#' )
+#'
+#' plot_death_gsea_ranked(
+#'   gsea_result,
+#'   pathway = apoptosis_id
+#' )
+#'
 plot_death_gsea_ranked <- function(gsea_res, pathway,
                                    use_recommended = TRUE,
                                    color = "#2E8B57",

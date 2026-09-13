@@ -42,3 +42,18 @@ Compatible with two modes from celldeath_gsea():
 Missing pathway in certain group will be shown as grey tile.
 }
 }
+\examples{
+data("demo_rank_apop_list", package = "CDEnrich")
+data("representative_genes", package = "CDEnrich")
+
+gsea_groups <- celldeath_gsea_multiple(
+  geneList_list = demo_rank_apop_list,
+  pvalueCutoff = 1
+)
+
+plot_death_gsea_heatmap_multiple(
+  gsea_groups,
+  statistic = "NES",
+  show_category = 10
+)
+}

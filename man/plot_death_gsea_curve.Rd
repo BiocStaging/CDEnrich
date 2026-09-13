@@ -26,3 +26,18 @@ A ggplot2 object.
 Generate standard three-panel GSEA enrichment plot for cell death pathway.
 Support both global multi-pathway mode and targeted single-pathway mode.
 }
+\examples{
+data("demo_rank_apop", package = "CDEnrich")
+data("representative_pathways", package = "CDEnrich")
+
+apoptosis_id <- get_representative_pathway("Apoptosis")$Pathway
+
+gsea_result <- celldeath_gsea(
+  geneList = demo_rank_apop
+)
+
+plot_death_gsea_curve(
+  gsea_result,
+  pathway = apoptosis_id
+)
+}

@@ -56,3 +56,18 @@ Automatically adapt for two modes:
 \item Targeted mode: single-pathway heatmap without row scaling
 }
 }
+\examples{
+data("demo_expr", package = "CDEnrich")
+data("demo_group", package = "CDEnrich")
+data("representative_genes", package = "CDEnrich")
+
+ssgsea_result <- celldeath_ssgsea(
+  expr = demo_expr,
+  group = demo_group
+)
+
+plot_death_ssgsea_heatmap(
+  ssgsea_result,
+  show_category = 10
+)
+}

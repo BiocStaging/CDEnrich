@@ -50,3 +50,19 @@ Compatible with two modes from celldeath_gsea():
 This plot shows the enrichment score as a function of the ranked gene list.
 }
 }
+\examples{
+data("demo_rank_apop", package = "CDEnrich")
+data("representative_pathways", package = "CDEnrich")
+
+apoptosis_id <- get_representative_pathway("Apoptosis")$Pathway
+
+gsea_result <- celldeath_gsea(
+  geneList = demo_rank_apop
+)
+
+plot_death_gsea_ranked(
+  gsea_result,
+  pathway = apoptosis_id
+)
+
+}

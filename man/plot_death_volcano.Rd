@@ -52,3 +52,18 @@ Generate a volcano-style plot for single-group enrichment analysis (ORA or GSEA)
 showing effect size (GeneRatio for ORA, NES for GSEA) versus significance (-log10 p.adjust).
 Support both global multi-pathway mode and targeted single-pathway mode.
 }
+\examples{
+data("demo_deg", package = "CDEnrich")
+data("demo_all_genes", package = "CDEnrich")
+data("representative_genes", package = "CDEnrich")
+
+ora_result <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes
+)
+
+plot_death_volcano(
+  ora_result,
+  label_top = 5
+)
+}

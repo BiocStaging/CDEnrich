@@ -96,6 +96,30 @@ test_that("plot_death_enrich_targeted returns compact plot and plotting data", {
   expect_s3_class(p_save, "ggplot")
 })
 
+test_that("plot_death_enrich_targeted keeps annotation visible", {
+  p <- plot_death_enrich_targeted(test_df_single)
+
+  expect_identical(
+    p$coordinates$clip,
+    "off"
+  )
+
+  expect_equal(
+    length(p$layers),
+    2
+  )
+
+  expect_s3_class(
+    p$layers[[1]]$geom,
+    "GeomCol"
+  )
+
+  expect_s3_class(
+    p$layers[[2]]$geom,
+    "GeomText"
+  )
+})
+
 test_that("plot_death_enrich_targeted validates single-row ORA input", {
   expect_error(
     plot_death_enrich_targeted(test_df_multi),

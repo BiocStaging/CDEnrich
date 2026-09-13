@@ -281,7 +281,7 @@ test_that("celldeath_ssgsea warns when overlap is smaller than min_size", {
   genes <- c("GPX4", paste0("Filler", 1:8))
   m <- matrix(rnorm(length(genes) * 3), nrow = length(genes),
               dimnames = list(genes, paste0("Sample", 1:3)))
-  expect_message(
+  expect_warning(
     celldeath_ssgsea(m),
     "cell death genes found"
   )
@@ -357,7 +357,7 @@ test_that("celldeath_ssgsea warns when a group has fewer than 2 samples", {
     .package = "GSVA"
   )
 
-  expect_message(
+  expect_warning(
     celldeath_ssgsea(build_expr(n_sample = 3), group = c("A", "A", "B")),
     "fewer than 2 samples"
   )
@@ -392,7 +392,10 @@ test_that("celldeath_ssgsea returns a celldeath_ssgsea object with score/group",
 
   # with group -> stored as factor
   grp <- factor(c("Control", "Treatment", "Treatment"))
-  res_g <- celldeath_ssgsea(expr, group = grp)
+  expect_warning(
+    res_g <- celldeath_ssgsea(expr, group = grp),
+    "fewer than 2 samples"
+  )
   expect_s3_class(res_g, "celldeath_ssgsea")
   expect_true(is.factor(res_g$group))
   expect_equal(as.character(res_g$group), as.character(grp))
@@ -451,7 +454,7 @@ test_that("celldeath_ssgsea_diff input validation", {
 test_that("celldeath_ssgsea_diff uses wilcox.test for 2 groups", {
   captured <- list()
   local_mocked_bindings(
-    wilcox.test  = function(x, y) { captured$test <<- "wilcox";  list(statistic = 10, p.value = 0.05) },
+    wilcox.test  = function(x, y, ...) { captured$test <<- "wilcox";  list(statistic = 10, p.value = 0.05) },
     kruskal.test = function(x, g) { captured$test <<- "kruskal"; list(statistic = 8,  p.value = 0.03) },
     p.adjust     = function(p, method) { captured$method <<- method; p },
     .package = "stats"
@@ -468,7 +471,7 @@ test_that("celldeath_ssgsea_diff uses wilcox.test for 2 groups", {
 test_that("celldeath_ssgsea_diff uses kruskal.test for 3+ groups", {
   captured <- list()
   local_mocked_bindings(
-    wilcox.test  = function(x, y) { captured$test <<- "wilcox";  list(statistic = 10, p.value = 0.05) },
+    wilcox.test  = function(x, y, ...) { captured$test <<- "wilcox";  list(statistic = 10, p.value = 0.05) },
     kruskal.test = function(x, g) { captured$test <<- "kruskal"; list(statistic = 8,  p.value = 0.03) },
     p.adjust     = function(p, method) { captured$method <<- method; p },
     .package = "stats"
@@ -486,7 +489,7 @@ test_that("celldeath_ssgsea_diff uses kruskal.test for 3+ groups", {
 test_that("celldeath_ssgsea_diff forwards pAdjustMethod to p.adjust", {
   captured <- list()
   local_mocked_bindings(
-    wilcox.test  = function(x, y) list(statistic = 1, p.value = 0.2),
+    wilcox.test  = function(x, y, ...) list(statistic = 1, p.value = 0.2),
     kruskal.test = function(x, g) list(statistic = 1, p.value = 0.2),
     p.adjust     = function(p, method) { captured$method <<- method; p },
     .package = "stats"
@@ -506,7 +509,7 @@ test_that("celldeath_ssgsea_diff forwards pAdjustMethod to p.adjust", {
 # ---- output is sorted by p-value and has reset rownames ----
 test_that("celldeath_ssgsea_diff output is sorted by p-value with reset rownames", {
   local_mocked_bindings(
-    wilcox.test  = function(x, y) list(statistic = 1, p.value = 0.2),
+    wilcox.test  = function(x, y, ...) list(statistic = 1, p.value = 0.2),
     kruskal.test = function(x, g) list(statistic = 1, p.value = 0.2),
     p.adjust     = function(p, method) p,
     .package = "stats"
@@ -531,7 +534,7 @@ test_that("celldeath_ssgsea_diff output is sorted by p-value with reset rownames
 # ---- savefile ----
 test_that("celldeath_ssgsea_diff writes CSV when savefile=TRUE", {
   local_mocked_bindings(
-    wilcox.test  = function(x, y) list(statistic = 1, p.value = 0.2),
+    wilcox.test  = function(x, y, ...) list(statistic = 1, p.value = 0.2),
     kruskal.test = function(x, g) list(statistic = 1, p.value = 0.2),
     p.adjust     = function(p, method) p,
     .package = "stats"

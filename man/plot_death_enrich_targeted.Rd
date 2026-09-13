@@ -33,3 +33,16 @@ Generate a compact summary plot for a targeted ORA result containing
 exactly one pathway. The bar shows the number of overlapping genes and
 the annotation reports GeneRatio, BgRatio, and adjusted P-value.
 }
+\examples{
+data("demo_targeted_deg", package = "CDEnrich")
+data("demo_all_genes", package = "CDEnrich")
+data("representative_pathways", package = "CDEnrich")
+
+ora_ferroptosis <- celldeath_enrich(
+  deg = demo_targeted_deg,
+  universe = demo_all_genes,
+  term_select = "Ferroptosis"
+)
+
+plot_death_enrich_targeted(ora_ferroptosis)
+}

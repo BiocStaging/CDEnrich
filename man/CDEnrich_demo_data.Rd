@@ -3,6 +3,10 @@
 \name{CDEnrich_demo_data}
 \alias{CDEnrich_demo_data}
 \title{CDEnrich Demonstration Data}
+\value{
+This help page is an overview of the demonstration datasets
+shipped with CDEnrich; see the individual dataset pages for details.
+}
 \description{
 Small simulated datasets used in CDEnrich examples and vignettes.
 }

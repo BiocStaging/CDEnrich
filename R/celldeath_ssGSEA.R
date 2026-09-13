@@ -86,23 +86,23 @@ celldeath_ssgsea <- function(
   }
   # Must be a numeric matrix
   if (!is.matrix(expr) || !is.numeric(expr)) {
-    stop("Error: Parameter expr must be a numeric matrix or data.frame (genes x samples)!")
+    stop("Parameter expr must be a numeric matrix or data.frame (genes x samples)!")
   }
   # Must have gene symbols as rownames
   if (is.null(rownames(expr)) || any(rownames(expr) == "")) {
-    stop("Error: The expression matrix must have gene symbols as rownames!")
+    stop("The expression matrix must have gene symbols as rownames!")
   }
   # Must have sample names as colnames
   if (is.null(colnames(expr)) || any(colnames(expr) == "")) {
-    stop("Error: The expression matrix must have sample names as colnames!")
+    stop("The expression matrix must have sample names as colnames!")
   }
   # Gene names must be unique
   if (anyDuplicated(rownames(expr))) {
-    stop("Error: Duplicated gene symbols detected in rownames! Please deduplicate before running ssGSEA (e.g. keep the probe with highest mean expression).")
+    stop("Duplicated gene symbols detected in rownames! Please deduplicate before running ssGSEA (e.g. keep the probe with highest mean expression).")
   }
   # Must not contain NA values
   if (any(is.na(expr))) {
-    stop("Error: The expression matrix cannot contain missing values (NA). Please impute or remove them first!")
+    stop("The expression matrix cannot contain missing values (NA). Please impute or remove them first!")
   }
 
   # ========== Validate group labels ==========
@@ -110,23 +110,23 @@ celldeath_ssgsea <- function(
     # Check length matches sample number
     if (length(group) != ncol(expr)) {
       stop(paste0(
-        "Error: The length of group (", length(group),
+        "The length of group (", length(group),
         ") does not match the number of samples (", ncol(expr), ")!"
       ))
     }
     # Check no empty labels or NA
     if (any(is.na(group)) || any(group == "")) {
-      stop("Error: Group labels cannot contain NA or empty strings!")
+      stop("Group labels cannot contain NA or empty strings!")
     }
     # Check at least 2 groups
     if (length(unique(group)) < 2) {
-      stop("Error: At least 2 distinct groups are required when group is provided!")
+      stop("At least 2 distinct groups are required when group is provided!")
     }
     # Convert to factor for stable downstream handling
     group <- factor(group)
     # Each group should contain at least 2 samples
     if (any(table(group) < 2)) {
-      message("Warning: Some groups contain fewer than 2 samples. Differential analysis may be unreliable!")
+      warning("Some groups contain fewer than 2 samples. Differential analysis may be unreliable!")
     }
   }
 
@@ -138,21 +138,21 @@ celldeath_ssgsea <- function(
                                           use_recommended = use_recommended)
 
   # ========== Filter gene sets by size ==========
-  death_gene_list <- death_gene_list[sapply(death_gene_list, length) >= min_size]
+  death_gene_list <- death_gene_list[vapply(death_gene_list, length, integer(1)) >= min_size]
   if (length(death_gene_list) == 0) {
-    stop("Error: No cell death pathway left after min_size filtering! Try lowering min_size.")
+    stop("No cell death pathway left after min_size filtering! Try lowering min_size.")
   }
 
   # ========== Check gene overlap between matrix and gene sets ==========
   overlap_n <- length(intersect(rownames(expr), unique(unlist(death_gene_list))))
   if (overlap_n == 0) {
-    stop("Error: No overlap between expression matrix rownames and cell death genes! Please check gene symbol format.")
+    stop("No overlap between expression matrix rownames and cell death genes! Please check gene symbol format.")
   }
   if (overlap_n < min_size) {
-    message(paste0(
-      "Warning: Only ", overlap_n, " cell death genes found in the expression matrix. ",
+    warning(
+      "Only ", overlap_n, " cell death genes found in the expression matrix. ",
       "Results may be unreliable!"
-    ))
+    )
   }
 
   # ========== Run ssGSEA (all samples scored on the same background) ==========
@@ -179,7 +179,7 @@ celldeath_ssgsea <- function(
       check.names = FALSE
     )
     utils::write.csv(result_df, file = filename, row.names = FALSE, fileEncoding = "UTF-8")
-    message(paste("Results have been saved to:", filename))
+    message("Results have been saved to: ", filename)
   }
 
   return(result)
@@ -225,10 +225,10 @@ celldeath_ssgsea_diff <- function(
 ) {
   # ========== Input validity check ==========
   if (!inherits(ssgsea_result, "celldeath_ssgsea")) {
-    stop("Error: Parameter ssgsea_result must be the output of celldeath_ssgsea()!")
+    stop("Parameter ssgsea_result must be the output of celldeath_ssgsea()!")
   }
   if (is.null(ssgsea_result$group)) {
-    stop("Error: No group information found! Please provide the group parameter when running celldeath_ssgsea().")
+    stop("No group information found! Please provide the group parameter when running celldeath_ssgsea().")
   }
 
   score_mat <- ssgsea_result$score
@@ -245,10 +245,9 @@ celldeath_ssgsea_diff <- function(
 
     # Select test according to group number
     if (n_group == 2) {
-      test_res <- suppressWarnings(
-        stats::wilcox.test(score_vec[group == group_levels[1]],
-                           score_vec[group == group_levels[2]])
-      )
+      test_res <- stats::wilcox.test(score_vec[group == group_levels[1]],
+                                     score_vec[group == group_levels[2]],
+                                     exact = FALSE)
       stat_value <- unname(test_res$statistic)
       stat_name <- "W"
     } else {
@@ -280,7 +279,7 @@ celldeath_ssgsea_diff <- function(
   # ========== Export CSV ==========
   if (savefile) {
     utils::write.csv(diff_df, file = filename, row.names = FALSE, fileEncoding = "UTF-8")
-    message(paste("Results have been saved to:", filename))
+    message("Results have been saved to: ", filename)
   }
 
   return(diff_df)

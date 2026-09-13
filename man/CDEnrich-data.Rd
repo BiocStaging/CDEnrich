@@ -3,6 +3,10 @@
 \name{CDEnrich-data}
 \alias{CDEnrich-data}
 \title{Curated Data Included in CDEnrich}
+\value{
+This help page is an overview of the curated datasets shipped
+with CDEnrich; see the linked pages for each dataset.
+}
 \description{
 Data objects used by CDEnrich to provide curated cell death pathway
 gene sets and representative pathway recommendations.

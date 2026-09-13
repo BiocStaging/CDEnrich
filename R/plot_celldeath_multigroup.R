@@ -16,6 +16,20 @@
 #' @importFrom ggplot2 ggplot aes geom_point scale_color_gradientn scale_size_continuous
 #' @importFrom ggplot2 facet_grid vars labs theme_minimal theme element_text unit ggsave
 #' @importFrom stringr str_wrap
+#' @examples
+#' data("demo_deg_list", package = "CDEnrich")
+#' data("demo_all_genes", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' compare_result <- celldeath_compare_enrich(
+#'   deg_list_list = demo_deg_list,
+#'   universe = demo_all_genes
+#' )
+#'
+#' plot_death_compare_bubble(
+#'   compare_result,
+#'   show_category = 10
+#' )
 plot_death_compare_bubble <- function(compare_res, show_category = 10,
                                       palette = c("#2E8B57", "#F39C12", "#E74C3C"),
                                       title = "Cell Death Pathway Enrichment (Multi-Group)",
@@ -32,7 +46,7 @@ plot_death_compare_bubble <- function(compare_res, show_category = 10,
   # 2. Subset top pathways for each group independently
   df_list <- split(df, df$Cluster)
   top_df <- do.call(rbind, lapply(df_list, function(x) {
-    x <- x[order(x$p.adjust), ][1:min(show_category, nrow(x)), ]
+    x <- x[order(x$p.adjust), ][seq_len(min(show_category, nrow(x))), ]
     x$Description <- stringr::str_wrap(x$Description, width = 40)
     return(x)
   }))
@@ -95,6 +109,20 @@ plot_death_compare_bubble <- function(compare_res, show_category = 10,
 #' @importFrom ggplot2 ggplot aes geom_tile scale_fill_gradientn labs theme_minimal
 #' @importFrom ggplot2 theme element_text element_rect unit ggsave
 #' @importFrom stringr str_wrap
+#' @examples
+#' data("demo_deg_list", package = "CDEnrich")
+#' data("demo_all_genes", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' compare_result <- celldeath_compare_enrich(
+#'   deg_list_list = demo_deg_list,
+#'   universe = demo_all_genes
+#' )
+#'
+#' plot_death_compare_heatmap(
+#'   compare_result,
+#'   show_category = 10
+#' )
 plot_death_compare_heatmap <- function(compare_res, show_category = 10,
                                        palette = c("#2E8B57", "#F39C12", "#E74C3C"),
                                        title = "Cell Death Pathway Enrichment (Multi-Group Heatmap)",
@@ -114,7 +142,7 @@ plot_death_compare_heatmap <- function(compare_res, show_category = 10,
   # 3. Select top pathways
   min_p_by_pathway <- tapply(df$p.adjust, df$Description, min, na.rm = TRUE)
   sorted_pathways <- names(sort(min_p_by_pathway))
-  pathway_order <- sorted_pathways[1:min(show_category, length(sorted_pathways))]
+  pathway_order <- sorted_pathways[seq_len(min(show_category, length(sorted_pathways)))]
 
   # 4. Filter data and wrap pathway labels
   heat_df <- df[df$Description %in% pathway_order, ]
@@ -179,12 +207,30 @@ plot_death_compare_heatmap <- function(compare_res, show_category = 10,
 #' @return A named list of ggplot2 objects, each containing one GSEA curve.
 #' @export
 #' @importFrom ggplot2 ggsave
+#' @examples
+#' data("demo_rank_apop_list", package = "CDEnrich")
+#' data("representative_pathways", package = "CDEnrich")
+#'
+#' apoptosis_id <- get_representative_pathway("Apoptosis")$Pathway
+#'
+#' gsea_groups <- celldeath_gsea_multiple(
+#'   geneList_list = demo_rank_apop_list,
+#'   pvalueCutoff = 1
+#' )
+#'
+#' curves <- plot_death_gsea_curve_multiple(
+#'   gsea_groups,
+#'   pathway = apoptosis_id
+#' )
+#'
+#' curves$Control
+#' curves$Treatment
 plot_death_gsea_curve_multiple <- function(gsea_res_list, pathway,
                                            use_recommended = TRUE,
                                            filename_prefix = NULL, ...) {
   # 1. Check input is a named list
   if (is.null(names(gsea_res_list)) || any(names(gsea_res_list) == "")) {
-    stop("Error: gsea_res_list must be a NAMED list!")
+    stop("gsea_res_list must be a NAMED list!")
   }
 
   # 2. Collect the union of pathway IDs across all non-empty group results
@@ -220,15 +266,15 @@ plot_death_gsea_curve_multiple <- function(gsea_res_list, pathway,
 
     # Check empty result
     if (is.null(current_res) || nrow(df_res) == 0) {
-      warning(paste0("Group [", group_name, "] GSEA result is empty, skip plotting."))
+      warning("Group [", group_name, "] GSEA result is empty, skip plotting.")
       next
     }
 
     # Check which resolved pathways are present in this group
     present <- resolved_pathways[resolved_pathways %in% df_res$ID]
     if (length(present) == 0) {
-      warning(paste0("Group [", group_name, "] does not contain pathway [",
-                     paste(resolved_pathways, collapse = ", "), "], skip plotting."))
+      warning("Group [", group_name, "] does not contain pathway [",
+                     paste(resolved_pathways, collapse = ", "), "], skip plotting.")
       next
     }
 
@@ -275,6 +321,20 @@ plot_death_gsea_curve_multiple <- function(gsea_res_list, pathway,
 #' @importFrom ggplot2 theme element_text element_rect unit ggsave
 #' @importFrom tidyr pivot_longer
 #' @importFrom stringr str_wrap
+#' @examples
+#' data("demo_rank_apop_list", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' gsea_groups <- celldeath_gsea_multiple(
+#'   geneList_list = demo_rank_apop_list,
+#'   pvalueCutoff = 1
+#' )
+#'
+#' plot_death_gsea_heatmap_multiple(
+#'   gsea_groups,
+#'   statistic = "NES",
+#'   show_category = 10
+#' )
 plot_death_gsea_heatmap_multiple <- function(gsea_res_list,
                                             show_category = 10,
                                             statistic = c("NES", "p.adjust"),
@@ -302,7 +362,7 @@ plot_death_gsea_heatmap_multiple <- function(gsea_res_list,
       df_res <- as.data.frame(res)
     }
     if (is.null(res) || nrow(df_res) == 0) {
-      warning(paste0("Group ", grp, " has no result, skipped."))
+      warning("Group ", grp, " has no result, skipped.")
       next
     }
     df_grp <- df_res[, c("ID", "Description", statistic)]

@@ -35,3 +35,18 @@ Automatically adapt two analysis modes from celldeath_enrich():
 Nodes represent pathways, edges represent gene overlaps (similarity)(only for multi-pathway).
 }
 }
+\examples{
+data("demo_deg", package = "CDEnrich")
+data("demo_all_genes", package = "CDEnrich")
+data("representative_genes", package = "CDEnrich")
+
+ora_result <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes
+)
+
+plot_death_enrich_network(
+  ora_result,
+  show_category = 10
+)
+}

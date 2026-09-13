@@ -21,12 +21,14 @@
 get_representative_pathway <- function(death_type) {
   # Input validation with a readable error message
   if (!is.character(death_type) || length(death_type) != 1 || is.na(death_type)) {
-    stop("Error: death_type must be a single cell death type name (character of length 1)!")
+    stop("death_type must be a single cell death type name (character of length 1)!")
   }
 
   # Option override (mainly for tests) replaces the built-in table entirely
-  tbl <- getOption("CDEnrich.representative_pathways",
-                   default = representative_pathways)
+  tbl <- getOption("CDEnrich.representative_pathways")
+  if (is.null(tbl)) {
+    tbl <- representative_pathways  # built-in internal data (data/)
+  }
 
   # Exact match on the Type column
   hit <- tbl[tbl$Type == death_type, , drop = FALSE]
@@ -67,7 +69,7 @@ get_representative_pathway <- function(death_type) {
 
   # Defensive check: only a single pathway/type is supported
   if (!is.character(term_select) || length(term_select) != 1) {
-    stop("Error: term_select must be a single pathway name (character of length 1)!")
+    stop("term_select must be a single pathway name (character of length 1)!")
   }
 
   # ---- Case 1: exact gene set name -> use directly ----
@@ -115,11 +117,7 @@ get_representative_pathway <- function(death_type) {
   if (length(matched) == 1) {
     # Single gene set available (from GeneCards) -> use it and inform the user
     message(sprintf(
-      paste0(
-        "'%s' has only one curated gene set (from GeneCards):\n",
-        "  %s\n",
-        "Using it for the analysis."
-      ),
+        "'%s' has only one curated gene set (from GeneCards):\n%s\nUsing it for the analysis.",
       term_select, matched
     ))
     return(gene_list[matched])
@@ -128,17 +126,15 @@ get_representative_pathway <- function(death_type) {
   if (length(matched) > 1) {
     # Multiple gene sets but no recommendation -> ask for an exact name
     stop(sprintf(
-      paste0(
-        "'%s' has multiple gene sets but no recommended one yet. ",
-        "Please specify one exactly:\n  %s"
-      ),
+        "'%s' has multiple gene sets but no recommended one yet.
+        Please specify one exactly:\n  %s",
       term_select, paste(matched, collapse = "\n  ")
     ), call. = FALSE)
   }
 
   # ---- Case 4: unknown name -> stop and list all available gene sets ----
-  stop(paste0("Error: Pathway name does not exist! Available pathways: ",
-              paste(names(gene_list), collapse = ", ")))
+  stop("Pathway name does not exist! Available pathways: ",
+              paste(names(gene_list), collapse = ", "))
 }
 
 

@@ -37,3 +37,18 @@ Support two analysis modes from celldeath_compare_enrich():
 \item Targeted mode: all groups compare against one single specified pathway
 }
 }
+\examples{
+data("demo_deg_list", package = "CDEnrich")
+data("demo_all_genes", package = "CDEnrich")
+data("representative_genes", package = "CDEnrich")
+
+compare_result <- celldeath_compare_enrich(
+  deg_list_list = demo_deg_list,
+  universe = demo_all_genes
+)
+
+plot_death_compare_bubble(
+  compare_result,
+  show_category = 10
+)
+}

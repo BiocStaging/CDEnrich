@@ -28,3 +28,5 @@ Thumbs.db
 # Generated vignette result files
 vignettes/*.csv
 vignettes/*.png
+/doc/
+/Meta/

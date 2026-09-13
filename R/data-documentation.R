@@ -11,6 +11,9 @@
 #'   representative pathway recommendations.
 #' }
 #'
+#' @return This help page is an overview of the curated datasets shipped
+#'   with CDEnrich; see the linked pages for each dataset.
+#'
 #' @name CDEnrich-data
 #' @keywords datasets
 NULL

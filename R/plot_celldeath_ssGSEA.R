@@ -26,6 +26,20 @@
 #' @export
 #' @importFrom pheatmap pheatmap
 #' @importFrom grDevices colorRampPalette
+#' @examples
+#' data("demo_expr", package = "CDEnrich")
+#' data("demo_group", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' ssgsea_result <- celldeath_ssgsea(
+#'   expr = demo_expr,
+#'   group = demo_group
+#' )
+#'
+#' plot_death_ssgsea_heatmap(
+#'   ssgsea_result,
+#'   show_category = 10
+#' )
 plot_death_ssgsea_heatmap <- function(ssgsea_result,
                                       show_category = 30,
                                       scale_rows = TRUE,
@@ -36,18 +50,18 @@ plot_death_ssgsea_heatmap <- function(ssgsea_result,
                                       filename = NULL, width = 10, height = 8) {
   # ========== Input validity check ==========
   if (!inherits(ssgsea_result, "celldeath_ssgsea")) {
-    stop("Error: Parameter ssgsea_result must be the output of celldeath_ssgsea()!")
+    stop("Parameter ssgsea_result must be the output of celldeath_ssgsea()!")
   }
   score_mat <- ssgsea_result$score
   group <- ssgsea_result$group
 
   if (nrow(score_mat) == 0 || ncol(score_mat) == 0) {
-    stop("Error: The ssGSEA score matrix is empty!")
+    stop("The ssGSEA score matrix is empty!")
   }
 
   # Keep top pathways by mean absolute score to avoid label overlap
   if (nrow(score_mat) > show_category) {
-    keep <- names(sort(rowMeans(abs(score_mat)), decreasing = TRUE))[1:show_category]
+    keep <- names(sort(rowMeans(abs(score_mat)), decreasing = TRUE))[seq_len(show_category)]
     score_mat <- score_mat[keep, , drop = FALSE]
   }
 
@@ -135,6 +149,20 @@ plot_death_ssgsea_heatmap <- function(ssgsea_result,
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_boxplot geom_jitter facet_wrap scale_fill_manual
 #' @importFrom ggplot2 labs theme_minimal theme element_text ggsave
+#' @examples
+#' data("demo_expr", package = "CDEnrich")
+#' data("demo_group", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' ssgsea_result <- celldeath_ssgsea(
+#'   expr = demo_expr,
+#'   group = demo_group
+#' )
+#'
+#' plot_death_ssgsea_boxplot(
+#'   ssgsea_result,
+#'   show_category = 10
+#' )
 plot_death_ssgsea_boxplot <- function(ssgsea_result,
                                       show_category = 10,
                                       palette = c("#2E8B57", "#F39C12", "#E74C3C", "#8E44AD"),
@@ -143,10 +171,10 @@ plot_death_ssgsea_boxplot <- function(ssgsea_result,
                                       filename = NULL, return_data = FALSE) {
   # ========== Input validity check ==========
   if (!inherits(ssgsea_result, "celldeath_ssgsea")) {
-    stop("Error: Parameter ssgsea_result must be the output of celldeath_ssgsea()!")
+    stop("Parameter ssgsea_result must be the output of celldeath_ssgsea()!")
   }
   if (is.null(ssgsea_result$group)) {
-    stop("Error: No group information found! Please provide the group parameter when running celldeath_ssgsea().")
+    stop("No group information found! Please provide the group parameter when running celldeath_ssgsea().")
   }
   score_mat <- ssgsea_result$score
   group <- ssgsea_result$group
@@ -162,7 +190,7 @@ plot_death_ssgsea_boxplot <- function(ssgsea_result,
 
   # Select top pathways by mean absolute score
   if (nrow(score_mat) > show_category) {
-    keep <- names(sort(rowMeans(abs(score_mat)), decreasing = TRUE))[1:show_category]
+    keep <- names(sort(rowMeans(abs(score_mat)), decreasing = TRUE))[seq_len(show_category)]
     df <- df[df$Pathway %in% keep, ]
   }
   df$Pathway <- factor(df$Pathway,
@@ -241,6 +269,20 @@ plot_death_ssgsea_boxplot <- function(ssgsea_result,
 #' @importFrom ggplot2 ggplot aes geom_bar geom_errorbar scale_fill_manual
 #' @importFrom ggplot2 labs theme_minimal theme element_text ggsave coord_flip position_dodge
 #' @importFrom stringr str_wrap
+#' @examples
+#' data("demo_expr", package = "CDEnrich")
+#' data("demo_group", package = "CDEnrich")
+#' data("representative_genes", package = "CDEnrich")
+#'
+#' ssgsea_result <- celldeath_ssgsea(
+#'   expr = demo_expr,
+#'   group = demo_group
+#' )
+#'
+#' plot_death_ssgsea_bar(
+#'   ssgsea_result,
+#'   show_category = 10
+#' )
 plot_death_ssgsea_bar <- function(ssgsea_res,
                                   show_category = 20,
                                   palette = c("#2E8B57", "#F39C12", "#E74C3C", "#8E44AD"),
@@ -248,10 +290,10 @@ plot_death_ssgsea_bar <- function(ssgsea_res,
                                   filename = NULL, return_data = FALSE) {
   # ========== Input validity check ==========
   if (!inherits(ssgsea_res, "celldeath_ssgsea")) {
-    stop("Error: Parameter ssgsea_res must be the output of celldeath_ssgsea()!")
+    stop("Parameter ssgsea_res must be the output of celldeath_ssgsea()!")
   }
   if (is.null(ssgsea_res$group)) {
-    stop("Error: Mean barplot requires group information! Please provide the group parameter when running celldeath_ssgsea().")
+    stop("Mean barplot requires group information! Please provide the group parameter when running celldeath_ssgsea().")
   }
 
   score_mat <- ssgsea_res$score
@@ -284,7 +326,7 @@ plot_death_ssgsea_bar <- function(ssgsea_res,
   unique_pathways <- unique(df$Pathway)
   if (length(unique_pathways) > show_category) {
     mean_abs <- tapply(df$Mean, df$Pathway, function(x) mean(abs(x)))
-    keep <- names(sort(mean_abs, decreasing = TRUE))[1:show_category]
+    keep <- names(sort(mean_abs, decreasing = TRUE))[seq_len(show_category)]
     df <- df[df$Pathway %in% keep, ]
   }
 

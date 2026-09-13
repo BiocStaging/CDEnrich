@@ -37,3 +37,18 @@ with SEM (standard error of mean) error bars.
 Suitable for comparing overall pathway activity across groups
 when many pathways are involved.
 }
+\examples{
+data("demo_expr", package = "CDEnrich")
+data("demo_group", package = "CDEnrich")
+data("representative_genes", package = "CDEnrich")
+
+ssgsea_result <- celldeath_ssgsea(
+  expr = demo_expr,
+  group = demo_group
+)
+
+plot_death_ssgsea_bar(
+  ssgsea_result,
+  show_category = 10
+)
+}

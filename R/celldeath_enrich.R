@@ -60,13 +60,13 @@ celldeath_enrich <- function(
 ) {
   # ========== Input validity check ==========
   if (!is.character(deg)) {
-    stop("Error: Parameter deg must be a character vector of gene symbols, e.g. c('GPX4','ACSL4')!")
+    stop("Parameter deg must be a character vector of gene symbols, e.g. c('GPX4','ACSL4')!")
   }
   # Remove empty strings and duplicate genes
   deg <- unique(deg[deg != ""])
   # Check sufficient gene quantity
   if (length(deg) < 3) {
-    stop("Error: The number of differential genes cannot be less than 3! Please add more genes and retry.")
+    stop("The number of differential genes cannot be less than 3! Please add more genes and retry.")
   }
 
   # ========== Load cell death gene sets ==========
@@ -84,7 +84,7 @@ celldeath_enrich <- function(
                                           use_recommended = use_recommended)
 
   # ========== Convert to TERM2GENE format ==========
-  term <- rep(names(death_gene_list), sapply(death_gene_list, length))
+  term <- rep(names(death_gene_list), vapply(death_gene_list, length, integer(1)))
   gene <- unlist(death_gene_list, use.names = FALSE)
 
   term2gene <- data.frame(
@@ -120,7 +120,7 @@ celldeath_enrich <- function(
   if (savefile) {
     result_df <- as.data.frame(enrich_result)
     utils::write.csv(result_df, file = filename, row.names = FALSE, fileEncoding = "UTF-8")
-    message(paste("Results have been saved to:", filename))
+    message("Results have been saved to:", filename)
   }
 
   return(enrich_result)
@@ -192,24 +192,24 @@ celldeath_compare_enrich <- function(
   # ========== Input validity check ==========
   # Check if input is a list
   if (!is.list(deg_list_list)) {
-    stop("Error: Parameter deg_list_list must be a list! Each element should be a character vector of differential genes for one group.")
+    stop("Parameter deg_list_list must be a list! Each element should be a character vector of differential genes for one group.")
   }
   # Check if list has group names
   if (is.null(names(deg_list_list)) || any(names(deg_list_list) == "")) {
-    stop("Error: The list must be named! Names correspond to group labels (e.g. Control/Treatment).")
+    stop("The list must be named! Names correspond to group labels (e.g. Control/Treatment).")
   }
   # Validate gene sets per group
   for (group_name in names(deg_list_list)) {
     deg_vec <- deg_list_list[[group_name]]
     # Check if it is a character vector
     if (!is.character(deg_vec)) {
-      stop(paste0("Error: Genes in group [", group_name, "] must be a character vector of gene symbols!"))
+      stop("Genes in group [", group_name, "] must be a character vector of gene symbols!")
     }
     # Remove empty strings and duplicate genes
     deg_vec <- unique(deg_vec[deg_vec != ""])
     # Check gene count threshold
     if (length(deg_vec) < 3) {
-      stop(paste0("Error: The number of differential genes in group [", group_name, "] cannot be less than 3!"))
+      stop("The number of differential genes in group [", group_name, "] cannot be less than 3!")
     }
     # Replace cleaned gene list
     deg_list_list[[group_name]] <- deg_vec
@@ -230,7 +230,7 @@ celldeath_compare_enrich <- function(
                                           use_recommended = use_recommended)
 
   # Convert to TERM2GENE format
-  term <- rep(names(death_gene_list), sapply(death_gene_list, length))
+  term <- rep(names(death_gene_list), vapply(death_gene_list, length, integer(1)))
   gene <- unlist(death_gene_list, use.names = FALSE)
   term2gene <- data.frame(
     Term = term,
@@ -241,7 +241,7 @@ celldeath_compare_enrich <- function(
   # Construct long-format data frame required by compareCluster (gene + group)
   gene_group_df <- data.frame(
     gene = unlist(deg_list_list, use.names = FALSE),
-    group = rep(names(deg_list_list), sapply(deg_list_list, length)),
+    group = rep(names(deg_list_list), vapply(deg_list_list, length, integer(1))),
     stringsAsFactors = FALSE
   )
 
@@ -282,7 +282,7 @@ celldeath_compare_enrich <- function(
   if (savefile) {
     result_df <- as.data.frame(compare_result)
     utils::write.csv(result_df, file = filename, row.names = FALSE, fileEncoding = "UTF-8")
-    message(paste("Results have been saved to:", filename))
+    message("Results have been saved to:", filename)
   }
 
 

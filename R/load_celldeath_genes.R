@@ -29,7 +29,7 @@ load_cell_death_genes <- function(.test_df = NULL, .test_rep = NULL) {
 
   # ===================== 2. Mandatory check of column names =====================
   if (!all(c("term", "gene") %in% colnames(df))) {
-    stop("Error: Gene set data must contain two columns: term and gene!")
+    stop("Gene set data must contain two columns: term and gene!")
   }
 
   # ===================== 3. Clean gene symbols =====================
@@ -44,17 +44,24 @@ load_cell_death_genes <- function(.test_df = NULL, .test_rep = NULL) {
   gene_list <- split(df$gene, df$term)
 
   # ===================== 6. Filter out pathways with insufficient genes =====================
-  gene_list <- gene_list[sapply(gene_list, length) >= 3]
+  gene_list <- gene_list[vapply(gene_list, length, integer(1)) >= 3]
 
   # ===================== 7. Merge recommended representative gene sets =====================
   # Skipped only in pure test mode (.test_df given without .test_rep).
   # Existing pathways with the same name are never overwritten.
   if (is.null(.test_df) || !is.null(.test_rep)) {
-    rep_sets <- if (!is.null(.test_rep)) .test_rep else representative_genes
+    if (!is.null(.test_rep)) {
+      rep_sets <- .test_rep
+    } else if (exists("representative_genes")) {
+      rep_sets <- representative_genes
+    } else {
+      stop("Package internal data 'representative_genes' not found. ",
+           "Run usethis::use_data(representative_genes, internal = TRUE, overwrite = TRUE).",
+           call. = FALSE)
+    }
     missing_sets <- rep_sets[!names(rep_sets) %in% names(gene_list)]
-    missing_sets <- missing_sets[sapply(missing_sets, length) >= 3]
+    missing_sets <- missing_sets[vapply(missing_sets, length, integer(1)) >= 3]
     gene_list <- c(gene_list, missing_sets)
   }
-
   return(gene_list)
 }

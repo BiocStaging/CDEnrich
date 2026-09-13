@@ -40,3 +40,18 @@ Automatically adapt for two modes:
 \item Targeted mode: single-pathway ORA plot layout adjustment
 }
 }
+\examples{
+data("demo_deg", package = "CDEnrich")
+data("demo_all_genes", package = "CDEnrich")
+data("representative_genes", package = "CDEnrich")
+
+ora_result <- celldeath_enrich(
+  deg = demo_deg,
+  universe = demo_all_genes
+)
+
+plot_death_enrich_bubble(
+  ora_result,
+  show_category = 10
+)
+}

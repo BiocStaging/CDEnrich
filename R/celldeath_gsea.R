@@ -79,7 +79,7 @@ celldeath_gsea <- function(
 
   # ========== Convert to TERM2GENE format required by GSEA ==========
   term2gene <- data.frame(
-    term = rep(names(death_gene_list), sapply(death_gene_list, length)),
+    term = rep(names(death_gene_list), vapply(death_gene_list, length, integer(1))),
     gene = unlist(death_gene_list, use.names = FALSE),
     stringsAsFactors = FALSE
   )
@@ -98,8 +98,8 @@ celldeath_gsea <- function(
     if (is.null(term_select)) {
       message("No significantly enriched cell death pathways detected. Try relaxing pvalueCutoff and retry!")
     } else {
-      message(paste0("No significant GSEA enrichment detected for pathway [",
-                     paste(names(death_gene_list), collapse = ", "), "]!"))
+      message("No significant GSEA enrichment detected for pathway [",
+                     paste(names(death_gene_list), collapse = ", "), "]!")
     }
     return(NULL)
   }
@@ -108,7 +108,7 @@ celldeath_gsea <- function(
   if (savefile) {
     result_df <- as.data.frame(gsea_res)
     utils::write.csv(result_df, file = filename, row.names = FALSE, fileEncoding = "UTF-8")
-    message(paste("Results have been saved to:", filename))
+    message("Results have been saved to: ", filename)
   }
 
   return(gsea_res)
@@ -182,16 +182,16 @@ celldeath_gsea_multiple <- function(
   for (group_name in names(geneList_list)) {
     gl <- geneList_list[[group_name]]
     if (!is.numeric(gl)) {
-      stop(paste("Group", group_name, ": 'geneList' must be a numeric vector."), call. = FALSE)
+      stop("Group ", group_name, ": 'geneList' must be a numeric vector.", call. = FALSE)
     }
     if (is.null(names(gl)) || any(names(gl) == "")) {
-      stop(paste("Group", group_name, ": 'geneList' must be a named numeric vector."), call. = FALSE)
+      stop("Group ", group_name, ": 'geneList' must be a named numeric vector.", call. = FALSE)
     }
     if (any(is.na(gl))) {
-      stop(paste("Group", group_name, ": 'geneList' cannot contain missing values (NA)."), call. = FALSE)
+      stop("Group ", group_name, ": 'geneList' cannot contain missing values (NA).", call. = FALSE)
     }
     if (is.unsorted(rev(gl))) {
-      stop(paste("Group", group_name, ": 'geneList' must be sorted in decreasing order."), call. = FALSE)
+      stop("Group ", group_name, ": 'geneList' must be sorted in decreasing order.", call. = FALSE)
     }
   }
 
@@ -204,7 +204,7 @@ celldeath_gsea_multiple <- function(
 
   # Convert to TERM2GENE format required by GSEA
   term2gene <- data.frame(
-    term = rep(names(death_gene_list), sapply(death_gene_list, length)),
+    term = rep(names(death_gene_list), vapply(death_gene_list, length, integer(1))),
     gene = unlist(death_gene_list, use.names = FALSE),
     stringsAsFactors = FALSE
   )

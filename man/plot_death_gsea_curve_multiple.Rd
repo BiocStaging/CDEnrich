@@ -35,3 +35,22 @@ A named list of ggplot2 objects, each containing one GSEA curve.
 \description{
 Plot GSEA Curves for Multiple Group Cell Death Pathways
 }
+\examples{
+data("demo_rank_apop_list", package = "CDEnrich")
+data("representative_pathways", package = "CDEnrich")
+
+apoptosis_id <- get_representative_pathway("Apoptosis")$Pathway
+
+gsea_groups <- celldeath_gsea_multiple(
+  geneList_list = demo_rank_apop_list,
+  pvalueCutoff = 1
+)
+
+curves <- plot_death_gsea_curve_multiple(
+  gsea_groups,
+  pathway = apoptosis_id
+)
+
+curves$Control
+curves$Treatment
+}
