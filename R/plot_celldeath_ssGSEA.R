@@ -117,9 +117,7 @@ plot_death_ssgsea_heatmap <- function(ssgsea_result,
 
   # Save plot if filename is provided
   if (!is.null(filename)) {
-    grDevices::png(filename, width = width, height = height, units = "in", res = 300)
-    grid::grid.draw(p$gtable)
-    grDevices::dev.off()
+    ggplot2::ggsave(filename, plot = p$gtable, width = width, height = height, dpi = 300)
   } else {
     grid::grid.draw(p$gtable)
   }
