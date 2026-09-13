@@ -1,9 +1,6 @@
 ---
-title: "CDEnrich"
 output:
   github_document:
-    toc: true
-    toc_depth: 2
 editor_options:
   markdown:
     wrap: 72
@@ -112,7 +109,7 @@ The `term_select` argument works identically across all analysis
 functions:
 
 | Usage | Syntax |
-|----|----|
+|------------------------------------|------------------------------------|
 | All gene sets | Omit `term_select` |
 | Recommended set for a death type | `term_select = "Ferroptosis"` |
 | Exact gene set name | `term_select = "Ferroptosis_FerrDb V2(36305834)"` |
@@ -128,7 +125,7 @@ plot_death_ssgsea_heatmap(ssgsea_result)
 ```
 
 | Category | Functions |
-|----|----|
+|------------------------------------|------------------------------------|
 | ORA | `plot_death_enrich_bubble()`, `plot_death_enrich_network()`, `plot_death_enrich_targeted()` |
 | Compare | `plot_death_compare_bubble()`, `plot_death_compare_heatmap()` |
 | GSEA | `plot_death_gsea_curve()`, `plot_death_gsea_curve_multiple()`, `plot_death_gsea_heatmap_multiple()`, `plot_death_gsea_ranked()` |
